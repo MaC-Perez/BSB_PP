@@ -1,5 +1,5 @@
 # BSB_PP
-CPUE standardization as part of Dr. Gavin Fay practicum project, School for Marine Science and Technology, University of Massachusetts Dartmouth (Black Sea Bass Research Track Working Group). Authors: Painten, A., Perez, Ma. & Tuesdell, S. 
+CPUE standardization as part of Dr. Gavin Fay practicum project, School for Marine Science and Technology, University of Massachusetts Dartmouth (Black Sea Bass Research Track Working Group). Authors: Painten, A., Perez, Ma. & Truesdell, S. 
 
 ## Black Sea Bass CPUE standardization 
 
