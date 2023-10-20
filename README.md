@@ -1,6 +1,8 @@
 # BSB_PP
 CPUE standardization as part of Dr. Gavin Fay practicum project, School for Marine Science and Technology, University of Massachusetts Dartmouth (Black Sea Bass Research Track Working Group). Authors: Painten, A., Perez, Ma. & Truesdell, S. 
 
+## Use the CPUE_BSB.R code inside the CPUE folder to reporduce the analysis 
+
 ## Black Sea Bass CPUE standardization 
 
 ## Survey Design 
