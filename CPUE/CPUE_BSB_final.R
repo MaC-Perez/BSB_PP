@@ -279,7 +279,7 @@ colnames(BBpred) <- c('year','mean CPUE','BBunv','BBunv_nb')
 BBpred_plot <- BBpred %>%
   pivot_longer(cols=2:ncol(.), names_to = "n_fish") %>%
   # Add in missing 2013 data (will be NAs)
-  complete(year = min(BBpred_plot$year):max(BBpred_plot$year),
+  complete(year = min(BBpred$year):max(BBpred$year),
            n_fish)
 
 # Specify x axis breaks
