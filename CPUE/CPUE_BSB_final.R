@@ -276,14 +276,22 @@ BBunv_nb<-as.data.frame(BBunv_nb)
 BBpred<- cbind(mean_BBunv[1],mean_BBunv[2], cpue_BBunv$cpue_BBunv, BBunv_nb$BBunv_nb)
 colnames(BBpred) <- c('year','mean CPUE','BBunv','BBunv_nb')
 
-BBpred_plot <- BBpred %>% pivot_longer(cols=2:ncol(.), names_to = "n_fish")
+BBpred_plot <- BBpred %>%
+  pivot_longer(cols=2:ncol(.), names_to = "n_fish") %>%
+  # Add in missing 2013 data (will be NAs)
+  complete(year = min(BBpred_plot$year):max(BBpred_plot$year),
+           n_fish)
 
-## 2013 is missing maybe add a NA? 
+# Specify x axis breaks
+xbrk <- seq(from = min(BBpred_plot$year), to = max(BBpred_plot$year), by =2)
+
+# Create the plot
 plot1<- BBpred_plot %>% 
   ggplot() +
   aes(x=year, y = value) +
-  geom_line(aes(col = n_fish), linewidth=1) +
+  geom_line(aes(col = n_fish), size=1) +
   theme(legend.position = "bottom") +
+  scale_x_continuous(breaks = xbrk) +
   labs(x="Year", y="Number of Fish")+
   guides(col = guide_legend(nrow = 1))
 
