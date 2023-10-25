@@ -438,7 +438,7 @@ p  = length(coef(BBunv_zi))
 OM9=sum(E2^2) / (N - p)
 
 
-## make predictions with model RIunv_zi
+## make predictions with model BBunv_zi
 
 BB_zi_pred <- tibble(
     # Include each year
@@ -669,5 +669,99 @@ lines(density(predict(RIunv_nb, type='response')), col='red')
 # we can use the predict function, but that assumes an homogeneus fleet 
 ################################################################################
 ################################################################################
+
+## make predictions with model hurdle negative binomial BBunv_negbin
+
+BB_zi_pred <- tibble(
+  # Include each year
+  Year = unique(BB$Year),
+  # Use the mean of the continuous variable
+  depthStrata = as.factor(min(BB$depthStrata)),
+  # Use the mode of the categorical variable
+  Month = names(table(BB$Month))[table(BB$Month) %>% which.max()])
+
+print(BB_zi_pred, n = nrow(BB_zi_pred))
+
+predsBB<- predict(BBunv_negbin, newdata = BB_zi_pred, type = 'response')
+predsBBBoot <- list()
+for(i in 1:10){
+  tmpMod <- update(BBunv_negbin, data = BB[sample(1:nrow(BB), replace = TRUE),])
+  if(any(is.na(tmpMod$vcov))){
+    next()
+  }else{
+    predsBBBoot[[i]] <- predict(tmpMod, newdata = BB_zi_pred, type = 'response')
+  }
+}
+
+# Number of instances where the model did not produce a variance
+sum(sapply(predsBBBoot, is.null))
+
+# Get mean and SE
+predsBB_ST <- predsBBBoot %>%
+  bind_rows() %>%
+  #rename_with(~BB_zi_pred$Year) %>%
+  pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  group_by(Year) %>%
+  summarize(Mean = mean(NHat),
+            SE = sd(NHat))
+
+upCI<-qnorm(0.975, mean = predsBB_ST$Mean, sd = predsBB_ST$SE)
+loCI<-qnorm(0.025, mean = predsBB_ST$Mean, sd = predsBB_ST$SE)
+
+predsBB_ST %>%
+  ggplot(aes(x = Year, y = Mean, group = 1)) +
+  geom_ribbon(aes(ymin = loCI, ymax = upCI),
+              fill = 'cornflowerblue', alpha = 0.5) +
+  geom_line() +
+  geom_point()+
+  ggtitle("Buzzards Bay unvented zero inflated (negbin)")
+
+
+## make predictions with model hurdle negative binomial RIunv_negbin
+
+RI_zi_pred <- tibble(
+  # Include each year
+  Year = unique(RI$Year),
+  # Use the mean of the continuous variable
+  depthStrata = as.factor(min(RI$depthStrata)),
+  # Use the mode of the categorical variable
+  Month = names(table(RI$Month))[table(RI$Month) %>% which.max()])
+
+print(RI_zi_pred, n = nrow(RI_zi_pred))
+
+predsRI<- predict(RIunv_negbin, newdata = RI_zi_pred, type = 'response')
+predsRIBoot <- list()
+for(i in 1:10){
+  tmpMod <- update(RIunv_negbin, data = RI[sample(1:nrow(RI), replace = TRUE),])
+  if(any(is.na(tmpMod$vcov))){
+    next()
+  }else{
+    predsRIBoot[[i]] <- predict(tmpMod, newdata = RI_zi_pred, type = 'response')
+  }
+}
+
+# Number of instances where the model did not produce a variance
+sum(sapply(predsRIBoot, is.null))
+
+# Get mean and SE
+predsRI_ST <- predsRIBoot %>%
+  bind_rows() %>%
+  rename_with(~BB_zi_pred$Year) %>%
+  pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  group_by(Year) %>% arrange(Year) %>%
+  summarize(Mean = mean(NHat),
+            SE = sd(NHat))
+
+upCI<-qnorm(0.975, mean = predsRI_ST$Mean, sd = predsRI_ST$SE)
+loCI<-qnorm(0.025, mean = predsRI_ST$Mean, sd = predsRI_ST$SE)
+
+predsRI_ST %>%
+  ggplot(aes(x = Year, y = Mean, group = 1)) +
+  geom_ribbon(aes(ymin = loCI, ymax = upCI),
+              fill = 'cornflowerblue', alpha = 0.5) +
+  geom_line() +
+  geom_point()+
+  ggtitle("Rhode Island unvented zero inflated (negbin)")
+
 
 
