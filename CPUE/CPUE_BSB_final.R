@@ -533,7 +533,7 @@ predsRI_ST <- predsRIBoot %>%
   rename_with(~(RI_zi_pred$Year %>% as.character)) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
   mutate(Year = Year %>% as.numeric()) %>%
-  complete(Year = 2008:2020) %>%
+  complete(Year = 2006:2020) %>%
   group_by(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
@@ -549,7 +549,6 @@ predsRI_ST %>%
   geom_point()+
   ggtitle("Rhode Island unvented zero inflated (negbin)") +
   scale_x_continuous(breaks = seq(2006, 2020, 2))
-
 
 
 # Third model hurdle including year month and strata Unvented Buzzards Bay 
@@ -702,11 +701,24 @@ for(i in 1:10){
 # Number of instances where the model did not produce a variance
 sum(sapply(predsBBBoot, is.null))
 
+predsBB_ST <- predsBBBoot %>%
+  bind_rows() %>%
+  rename_with(~(BB_zi_pred$Year %>% as.character())) %>%
+  pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  mutate(Year = Year %>% as.numeric()) %>%
+  complete(Year = 2008:2020) %>%
+  group_by(Year) %>%
+  summarize(Mean = mean(NHat),
+            SE = sd(NHat))
+
+
 # Get mean and SE
 predsBB_ST <- predsBBBoot %>%
   bind_rows() %>%
-  #rename_with(~BB_zi_pred$Year) %>%
+  rename_with(~(BB_zi_pred$Year %>% as.character())) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  mutate(Year = Year %>% as.numeric()) %>%
+  complete(Year = 2008:2020) %>%
   group_by(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
@@ -720,7 +732,8 @@ predsBB_ST %>%
               fill = 'cornflowerblue', alpha = 0.5) +
   geom_line() +
   geom_point()+
-  ggtitle("Buzzards Bay unvented zero inflated (negbin)")
+  ggtitle("Buzzards Bay unvented Hurdle (negbin)")+
+  scale_x_continuous(breaks = seq(2008, 2020, 2))
 
 
 ## make predictions with model hurdle negative binomial RIunv_negbin
@@ -752,8 +765,10 @@ sum(sapply(predsRIBoot, is.null))
 # Get mean and SE
 predsRI_ST <- predsRIBoot %>%
   bind_rows() %>%
-  rename_with(~BB_zi_pred$Year) %>%
+  rename_with(~(RI_zi_pred$Year %>% as.character)) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  mutate(Year = Year %>% as.numeric()) %>%
+  complete(Year = 2006:2020) %>%
   group_by(Year) %>% arrange(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
@@ -767,7 +782,7 @@ predsRI_ST %>%
               fill = 'cornflowerblue', alpha = 0.5) +
   geom_line() +
   geom_point()+
-  ggtitle("Rhode Island unvented zero inflated (negbin)")
+  ggtitle("Rhode Island unvented Hurdle (negbin)")
 
 
 
