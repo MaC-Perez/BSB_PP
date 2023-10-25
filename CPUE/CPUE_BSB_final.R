@@ -121,6 +121,8 @@ BBunv$summary<-summary(BBunv)
 anova(BBunv)
 PseudoR(BBunv)
 
+cbind(coef(BBunv), confint(BBunv))
+
 # Second model GLM including year month and strata, poisson family 
 # Vented BB
 
@@ -131,6 +133,7 @@ BBv$summary<-summary(BBv)
 anova(BBv)
 PseudoR(BBv)
 
+cbind(coef(BBv), confint(BBv))
 
 #check overdispersion model 1 Unvented 
 E2 = resid(BBunv, type = "pearson")
@@ -165,6 +168,8 @@ BBunv_nb$summary<-summary(BBunv_nb)
 anova(BBunv_nb)
 PseudoR(BBunv_nb)
 
+cbind(coef(BBunv_nb), confint(BBunv_nb))
+
 # Fourth model negative binomial GLM including year month and strata 
 # Vented BB
 
@@ -174,6 +179,8 @@ BBv_nb <- glm.nb(bsbCount_Vented ~ as.factor(Year) + as.factor(Month)+ as.factor
 BBv_nb$summary<-summary(BBv_nb)
 anova(BBv_nb)
 PseudoR(BBv_nb)
+
+cbind(coef(BBv_nb), confint(BBv_nb))
 
 E2 = resid(BBunv_nb, type = "pearson")
 N  = nrow(BB)
@@ -202,6 +209,8 @@ anova(RIunv)
 PseudoR(RIunv)
 AIC(RIunv)
 
+cbind(coef(RIunv), confint(RIunv))
+
 #check overdispersion 
 E2 = resid(RIunv, type = "pearson")
 N  = nrow(RI)
@@ -221,6 +230,8 @@ AIC(RIv)
 
 AIC(RIv, RIunv)
 
+cbind(coef(RIv), confint(RIv))
+
 #check overdispersion 
 E2 = resid(RIv, type = "pearson")
 N  = nrow(RI)
@@ -238,6 +249,8 @@ RIunv_nb$summary<-summary(RIunv_nb)
 anova(RIunv_nb)
 PseudoR(RIunv_nb)
 
+cbind(coef(RIunv_nb), confint(RIunv_nb))
+
 E2 = resid(RIunv_nb, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIunv_nb))   
@@ -254,6 +267,8 @@ RIv_nb$summary<-summary(RIv_nb)
 anova(RIv_nb)
 PseudoR(RIv_nb)
 
+cbind(coef(RIv_nb), confint(RIv_nb))
+
 E2 = resid(RIv_nb, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIv_nb))   
@@ -267,7 +282,7 @@ mean_BBunv <- BB %>% group_by(Year) %>%
   summarise (cpue = mean(bsbCount_Unvented, na.rm = TRUE),
              cpuen = n())
 
-cpue_BBunv <- (c(BBunv$summary$coefficients[1,1],  
+cpue_BBunv <- exp(c(BBunv$summary$coefficients[1,1],  
                  BBunv$summary$coefficients[1,1] + BBunv$summary$coefficients[2:12,1]))
 cpue_BBunv<-as.data.frame(cpue_BBunv)
 
@@ -305,7 +320,7 @@ mean_RIunv <- RI %>% group_by(Year) %>%
   summarise (cpue = mean(bsbCount_Unvented, na.rm = TRUE),
              cpuen = n())
 
-cpue_RIunv <- (c(RIunv$summary$coefficients[1,1],  
+cpue_RIunv <- exp(c(RIunv$summary$coefficients[1,1],  
                  RIunv$summary$coefficients[1,1] + RIunv$summary$coefficients[2:15,1]))
 cpue_RIunv<-as.data.frame(cpue_RIunv)
 
@@ -335,7 +350,7 @@ mean_BBv <- BB %>% group_by(Year) %>%
   summarise (cpue = mean(bsbCount_Vented, na.rm = TRUE),
              cpuen = n())
 
-cpue_BBv <- (c(BBv$summary$coefficients[1,1],  
+cpue_BBv <- exp(c(BBv$summary$coefficients[1,1],  
                  BBv$summary$coefficients[1,1] + BBv$summary$coefficients[2:12,1]))
 cpue_BBv<-as.data.frame(cpue_BBv)
 
@@ -373,7 +388,7 @@ mean_RIv <- RI %>% group_by(Year) %>%
   summarise (cpue = mean(bsbCount_Vented, na.rm = TRUE),
              cpuen = n())
 
-cpue_RIv <- (c(RIv$summary$coefficients[1,1],  
+cpue_RIv <- exp(c(RIv$summary$coefficients[1,1],  
                  RIv$summary$coefficients[1,1] + RIv$summary$coefficients[2:15,1]))
 cpue_RIv<-as.data.frame(cpue_RIv)
 
