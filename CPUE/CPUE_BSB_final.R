@@ -145,7 +145,7 @@ OM1<- sum(E2^2) / (N - p)
 E2 = resid(BBv, type = "pearson")
 N  = nrow(BB)
 p  = length(coef(BBv))   
-OM1.1<- sum(E2^2) / (N - p)
+OM2<- sum(E2^2) / (N - p)
 
 AIC(BBunv,BBv)
 
@@ -190,7 +190,7 @@ OM3<-sum(E2^2) / (N - p)
 E2 = resid(BBv_nb, type = "pearson")
 N  = nrow(BB)
 p  = length(coef(BBv_nb))   
-OM3.3<-sum(E2^2) / (N - p)
+OM4<-sum(E2^2) / (N - p)
 
 AIC(BBunv_nb,BBv_nb)
 
@@ -215,7 +215,7 @@ cbind(coef(RIunv), confint(RIunv))
 E2 = resid(RIunv, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIunv))   
-OM8<- sum(E2^2) / (N - p)
+OM5<- sum(E2^2) / (N - p)
 
 # Second model GLM including year month and strata, poisson family 
 # Vented RI
@@ -236,7 +236,7 @@ cbind(coef(RIv), confint(RIv))
 E2 = resid(RIv, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIv))   
-OM8.8<- sum(E2^2) / (N - p)
+OM6<- sum(E2^2) / (N - p)
 
 
 # Third model negative binomial GLM including year month and strata 
@@ -254,7 +254,7 @@ cbind(coef(RIunv_nb), confint(RIunv_nb))
 E2 = resid(RIunv_nb, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIunv_nb))   
-OM9<-sum(E2^2) / (N - p)
+OM7<-sum(E2^2) / (N - p)
 
 
 # Fourth model negative binomial GLM including year month and strata 
@@ -272,7 +272,7 @@ cbind(coef(RIv_nb), confint(RIv_nb))
 E2 = resid(RIv_nb, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIv_nb))   
-OM9.9<-sum(E2^2) / (N - p)
+OM8<-sum(E2^2) / (N - p)
 
 AIC(RIunv_nb, RIv_nb)
 
@@ -303,6 +303,8 @@ BBpred_plot_unv <- BBpred_unv %>%
 xbrk <- seq(from = min(BBpred_plot_unv$year), to = max(BBpred_plot_unv$year), by =2)
 
 # Create the plot
+ppi <- 300
+png("Buzzards Bay unvented.png", width=10*ppi, height=4.5*ppi, res=ppi)
 plot1<- BBpred_plot_unv %>% 
   ggplot() +
   aes(x=year, y = value) +
@@ -312,6 +314,8 @@ plot1<- BBpred_plot_unv %>%
   labs(x="Year", y="Number of Fish")+
   guides(col = guide_legend(nrow = 1))+
            ggtitle("Buzzards Bay unvented")
+plot1
+dev.off()
 
 
 # UNVENTED CPUE RHODE ISLAND
@@ -333,7 +337,10 @@ colnames(RIpred_unv) <- c('year','mean CPUE','RIunv','RIunv_nb')
 
 RIpred_plot_unv <- RIpred_unv %>% pivot_longer(cols=2:ncol(.), names_to = "n_fish")
 
-## initial value negative  
+## initial value negative 
+
+ppi <- 300
+png("Rhode Island unvented.png", width=10*ppi, height=4.5*ppi, res=ppi)
 plot2<- RIpred_plot_unv %>% 
   ggplot() +
   aes(x=year, y = value) +
@@ -342,6 +349,9 @@ plot2<- RIpred_plot_unv %>%
   labs(x="Year", y="Number of Fish")+
   guides(col = guide_legend(nrow = 1))+
   ggtitle("Rhode Island unvented")
+
+plot2
+dev.off()
 
 
 # VENTED CPUE BUZZARDS BAY SUMMARY
@@ -413,23 +423,24 @@ plot4<- RIpred_plot_ven %>%
 
 
 
-#### Zero inflated and Hurdle models 
+#### Zero inflated models 
 
 # First model ZI including year month and strata, negative binomial 
-# Unvented RI
+# Unvented Buzzards Bay 
 
-RIunv_zi <- zeroinfl(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), 
-                data = RI, dist = "negbin")
+BBunv_zi <- zeroinfl(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), 
+                data = BB, dist = "negbin")
 
-summary(RIunv_zi)
-E2 = resid(RIunv_zi, type = "pearson")
-N  = nrow(RI)
-p  = length(coef(RIunv_zi))   
-OM7=sum(E2^2) / (N - p)
+summary(BBunv_zi)
+E2 = resid(BBunv_zi, type = "pearson")
+N  = nrow(BB)
+p  = length(coef(BBunv_zi))   
+OM9=sum(E2^2) / (N - p)
+
 
 ## make predictions with model RIunv_zi
 
-nd_pred <- tibble(
+BB_zi_pred <- tibble(
     # Include each year
   Year = unique(BB$Year),
     # Use the mean of the continuous variable
@@ -437,117 +448,226 @@ nd_pred <- tibble(
     # Use the mode of the categorical variable
   Month = names(table(BB$Month))[table(BB$Month) %>% which.max()])
 
-print(nd_pred, n = nrow(nd_pred))
+print(BB_zi_pred, n = nrow(BB_zi_pred))
 
-preds_nd <- predict(RIunv_zi, newdata = nd_pred, type = 'response')
-preds_m7Boot <- list()
+predsBB<- predict(BBunv_zi, newdata = BB_zi_pred, type = 'response')
+predsBBBoot <- list()
 for(i in 1:10){
-  tmpMod <- update(RIunv_zi, data = BB[sample(1:nrow(BB), replace = TRUE),])
+  tmpMod <- update(BBunv_zi, data = BB[sample(1:nrow(BB), replace = TRUE),])
   if(any(is.na(tmpMod$vcov))){
     next()
   }else{
-    preds_m7Boot[[i]] <- predict(tmpMod, newdata = nd_pred, type = 'response')
+    predsBBBoot[[i]] <- predict(tmpMod, newdata = BB_zi_pred, type = 'response')
   }
 }
+
 # Number of instances where the model did not produce a variance
-sum(sapply(preds_m7Boot, is.null))
+sum(sapply(predsBBBoot, is.null))
 
 # Get mean and SE
-predsM7_ST <- preds_m7Boot %>%
+predsBB_ST <- predsBBBoot %>%
   bind_rows() %>%
-  rename_with(~nd_pred$Year) %>%
+  #rename_with(~BB_zi_pred$Year) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
   group_by(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
 
-upCI<-qnorm(0.975, mean = predsM7_ST$Mean, sd = predsM7_ST$SE)
-loCI<-qnorm(0.025, mean = predsM7_ST$Mean, sd = predsM7_ST$SE)
+upCI<-qnorm(0.975, mean = predsBB_ST$Mean, sd = predsBB_ST$SE)
+loCI<-qnorm(0.025, mean = predsBB_ST$Mean, sd = predsBB_ST$SE)
 
-predsM7_ST %>%
+predsBB_ST %>%
   ggplot(aes(x = Year, y = Mean, group = 1)) +
   geom_ribbon(aes(ymin = loCI, ymax = upCI),
               fill = 'cornflowerblue', alpha = 0.5) +
   geom_line() +
-  geom_point()
+  geom_point()+
+  ggtitle("Buzzards Bay unvented zero inflated (negbin)")
 
-# First model hurdle including year month and strata  dist="poisson", zero.dist="binomial", link="logit"
-# Unvented RI
+
+# Second model ZI including year month and strata, negative binomial 
+# Unvented Rhode Island 
+
+RIunv_zi <- zeroinfl(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), 
+                     data = RI, dist = "negbin")
+
+summary(RIunv_zi)
+E2 = resid(RIunv_zi, type = "pearson")
+N  = nrow(RI)
+p  = length(coef(RIunv_zi))   
+OM10=sum(E2^2) / (N - p)
+
+
+## make predictions with model RIunv_zi
+
+RI_zi_pred <- tibble(
+  # Include each year
+  Year = unique(RI$Year),
+  # Use the mean of the continuous variable
+  depthStrata = as.factor(min(RI$depthStrata)),
+  # Use the mode of the categorical variable
+  Month = names(table(RI$Month))[table(RI$Month) %>% which.max()])
+
+print(RI_zi_pred, n = nrow(RI_zi_pred))
+
+predsRI<- predict(RIunv_zi, newdata = RI_zi_pred, type = 'response')
+predsRIBoot <- list()
+for(i in 1:10){
+  tmpMod <- update(RIunv_zi, data = RI[sample(1:nrow(RI), replace = TRUE),])
+  if(any(is.na(tmpMod$vcov))){
+    next()
+  }else{
+    predsRIBoot[[i]] <- predict(tmpMod, newdata = RI_zi_pred, type = 'response')
+  }
+}
+
+# Number of instances where the model did not produce a variance
+sum(sapply(predsRIBoot, is.null))
+
+# Get mean and SE
+predsRI_ST <- predsRIBoot %>%
+  bind_rows() %>%
+  #rename_with(~BB_zi_pred$Year) %>%
+  pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  group_by(Year) %>%
+  summarize(Mean = mean(NHat),
+            SE = sd(NHat))
+
+upCI<-qnorm(0.975, mean = predsRI_ST$Mean, sd = predsRI_ST$SE)
+loCI<-qnorm(0.025, mean = predsRI_ST$Mean, sd = predsRI_ST$SE)
+
+predsRI_ST %>%
+  ggplot(aes(x = Year, y = Mean, group = 1)) +
+  geom_ribbon(aes(ymin = loCI, ymax = upCI),
+              fill = 'cornflowerblue', alpha = 0.5) +
+  geom_line() +
+  geom_point()+
+  ggtitle("Rhode Island unvented zero inflated (negbin)")
+
+
+
+# Third model hurdle including year month and strata Unvented Buzzards Bay 
+
+BBunv_hurdle <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = BB,
+             dist="poisson", zero.dist="binomial", link="logit") 
+
+summary(BBunv_hurdle)
+coeftest(BBunv_hurdle)
+
+E2 = resid(BBunv_hurdle, type = "pearson")
+N  = nrow(BB)
+p  = length(coef(BBunv_hurdle))   
+OM11=sum(E2^2) / (N - p)
 
 ## geometric-poisson
-RIunv_hurd1 <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
-             dist="poisson", zero.dist="binomial", link="logit")
-
-summary(RIunv_hurd1)
-coeftest(RIunv_hurd1)
-
-E2 = resid(RIunv_hurd1, type = "pearson")
-N  = nrow(RI)
-p  = length(coef(RIunv_hurd1))   
-OM5=sum(E2^2) / (N - p)
-
-# Second model hurdle including year month and strata  zero = "geometric"
-# Unvented RI
-
-RIunv_hurd2 <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+BBunv_geom <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = BB,
              zero = "geometric")
-summary(RIunv_hurd2)
-coeftest(RIunv_hurd2)
+summary(BBunv_geom)
+coeftest(BBunv_geom)
 
-E2 = resid(RIunv_hurd2, type = "pearson")
-N  = nrow(RI)
-p  = length(coef(RIunv_hurd2))   
-OM6=sum(E2^2) / (N - p)
+E2 = resid(BBunv_geom, type = "pearson")
+N  = nrow(BB)
+p  = length(coef(BBunv_geom))   
+OM12=sum(E2^2) / (N - p)
 
-# Third model hurdle including year month and strata  distr = "negbin"
-# Unvented RI
-
-RIunv_hurd3 <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+## logit-negbin
+BBunv_negbin <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = BB,
              dist = "negbin")
-summary(RIunv_hurd3)
-coeftest(RIunv_hurd3)
+summary(BBunv_negbin)
+coeftest(BBunv_negbin)
 
-E2 = resid(RIunv_hurd3, type = "pearson")
-N  = nrow(RI)
-p  = length(coef(RIunv_hurd3))   
-OM7=sum(E2^2) / (N - p)
+E2 = resid(BBunv_negbin, type = "pearson")
+N  = nrow(BB)
+p  = length(coef(BBunv_negbin))   
+OM13=sum(E2^2) / (N - p)
 
-# Fourth model hurdle including year month and strata  distr = "negbin"  zero = "negbin"
-# Unvented RI
+## negbin-negbin
 ## (poorly conditioned zero hurdle, note the standard errors)
-RIunv_hurd4 <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+BBunv_nbnb <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = BB,
              dist = "negbin", zero = "negbin")
-summary(RIunv_hurd4)
-coeftest(RIunv_hurd4)
+summary(BBunv_nbnb)
+coeftest(BBunv_nbnb)
 
-E2 = resid(RIunv_hurd4, type = "pearson")
-N  = nrow(RI)
-p  = length(coef(RIunv_hurd4))   
-OM8=sum(E2^2) / (N - p)
+E2 = resid(BBunv_nbnb, type = "pearson")
+N  = nrow(BB)
+p  = length(coef(BBunv_nbnb))   
+OM14=sum(E2^2) / (N - p)
 
 
 # Comparacion AIC
-AIC(RIunv_hurd1,RIunv_hurd2, RIunv_hurd3, RIunv_hurd4)
+AIC(BBunv_hurdle,BBunv_geom, BBunv_negbin, BBunv_nbnb)
+
+# Comparacion baja/dispersion
+c(OM11, OM12, OM13, OM14)
+
+# Rhode Island Unvented
+
+RIunv_hurdle <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+                       dist="poisson", zero.dist="binomial", link="logit") 
+
+summary(RIunv_hurdle)
+coeftest(RIunv_hurdle)
+
+E2 = resid(RIunv_hurdle, type = "pearson")
+N  = nrow(RI)
+p  = length(coef(RIunv_hurdle))   
+OM15=sum(E2^2) / (N - p)
+
+## geometric-poisson
+RIunv_geom <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+                     zero = "geometric")
+summary(RIunv_geom)
+coeftest(RIunv_geom)
+
+E2 = resid(RIunv_geom, type = "pearson")
+N  = nrow(RI)
+p  = length(coef(RIunv_geom))   
+OM16=sum(E2^2) / (N - p)
+
+## logit-negbin
+RIunv_negbin <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+                       dist = "negbin")
+summary(RIunv_negbin)
+coeftest(RIunv_negbin)
+
+E2 = resid(RIunv_negbin, type = "pearson")
+N  = nrow(RI)
+p  = length(coef(RIunv_negbin))   
+OM17=sum(E2^2) / (N - p)
+
+## negbin-negbin
+## (poorly conditioned zero hurdle, note the standard errors)
+RIunv_nbnb <- hurdle(bsbCount_Unvented ~ as.factor(Year)+ as.factor(Month)+ as.factor(depthStrata), data = RI,
+                     dist = "negbin", zero = "negbin")
+summary(RIunv_nbnb)
+coeftest(RIunv_nbnb)
+
+E2 = resid(RIunv_nbnb, type = "pearson")
+N  = nrow(RI)
+p  = length(coef(RIunv_nbnb))   
+OM18=sum(E2^2) / (N - p)
+
+
+# Comparacion AIC
+AIC(RIunv_hurdle,RIunv_geom, RIunv_negbin, RIunv_nbnb)
+
+# Comparacion baja/dispersion
+c(OM15, OM16, OM17, OM18)
 
 
 
+par(mfrow=c(1,2))
+plot(density(BB$bsbCount_Unvented))
+lines(density(predict(BBunv_nb, type='response')), col='red')
 
-m_bin <- glm(presence~1, data = newdat,
-             family = binomial(link=logit))
-m_pos <- glm(unventedCPUE~1, data = filter(newdat,presence==1),
-             family= Gamma(link=log))
-plogis(coef(m_bin))
-#intercept 0.60515
+plot(density(RI$bsbCount_Unvented))
+lines(density(predict(RIunv_nb, type='response')), col='red')
 
-exp(coef(m_pos))
-#intercept 1.398476
 
-#model predictions
-newdat$bin_predict <- predict(m_bin, newdata = newdat,
-                              type = 'response')
-newdat$pos_predict <- predict(m_pos, newdata = newdat,
-                              type = 'response')
-newdat <- newdat %>%
-  mutate(combined_predict =
-           bin_predict * pos_predict)
+# for extract coefficients we want the fish count or probability of find a fish poisson or negative binomial
+# we want the cpue index or we want the cpue standardization  because for the index we can just extract the coeffiecients bur if we want the standardization 
+# we can use the predict function, but that assumes an homogeneus fleet 
+################################################################################
+################################################################################
+
 
