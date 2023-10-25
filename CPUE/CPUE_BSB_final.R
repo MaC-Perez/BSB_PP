@@ -271,31 +271,32 @@ cpue_BBunv <- (c(BBunv$summary$coefficients[1,1],
                  BBunv$summary$coefficients[1,1] + BBunv$summary$coefficients[2:12,1]))
 cpue_BBunv<-as.data.frame(cpue_BBunv)
 
-BBunv_nb <- (c(BBunv_nb$summary$coefficients[1,1],  
+BBunv_nb <- exp(c(BBunv_nb$summary$coefficients[1,1],  
                BBunv_nb$summary$coefficients[1,1] + BBunv_nb$summary$coefficients[2:12,1]))
 BBunv_nb<-as.data.frame(BBunv_nb)
 
-BBpred<- cbind(mean_BBunv[1],mean_BBunv[2], cpue_BBunv$cpue_BBunv, BBunv_nb$BBunv_nb)
-colnames(BBpred) <- c('year','mean CPUE','BBunv','BBunv_nb')
+BBpred_unv<- cbind(mean_BBunv[1],mean_BBunv[2], cpue_BBunv$cpue_BBunv, BBunv_nb$BBunv_nb)
+colnames(BBpred_unv) <- c('year','mean CPUE','BBunv','BBunv_nb')
 
-BBpred_plot <- BBpred %>%
+BBpred_plot_unv <- BBpred_unv %>%
   pivot_longer(cols=2:ncol(.), names_to = "n_fish") %>%
   # Add in missing 2013 data (will be NAs)
   complete(year = min(BBpred$year):max(BBpred$year),
            n_fish)
 
 # Specify x axis breaks
-xbrk <- seq(from = min(BBpred_plot$year), to = max(BBpred_plot$year), by =2)
+xbrk <- seq(from = min(BBpred_plot_unv$year), to = max(BBpred_plot_unv$year), by =2)
 
 # Create the plot
-plot1<- BBpred_plot %>% 
+plot1<- BBpred_plot_unv %>% 
   ggplot() +
   aes(x=year, y = value) +
-  geom_line(aes(col = n_fish), size=1) +
+  geom_line(aes(col = n_fish), linewidth=1) +
   theme(legend.position = "bottom") +
   scale_x_continuous(breaks = xbrk) +
   labs(x="Year", y="Number of Fish")+
-  guides(col = guide_legend(nrow = 1))
+  guides(col = guide_legend(nrow = 1))+
+           ggtitle("Buzzards Bay unvented")
 
 
 # UNVENTED CPUE RHODE ISLAND
@@ -308,23 +309,93 @@ cpue_RIunv <- (c(RIunv$summary$coefficients[1,1],
                  RIunv$summary$coefficients[1,1] + RIunv$summary$coefficients[2:15,1]))
 cpue_RIunv<-as.data.frame(cpue_RIunv)
 
-RIunv_nb <- (c(RIunv_nb$summary$coefficients[1,1],  
+RIunv_nb <- exp(c(RIunv_nb$summary$coefficients[1,1],  
                RIunv_nb$summary$coefficients[1,1] + RIunv_nb$summary$coefficients[2:15,1]))
 RIunv_nb<-as.data.frame(RIunv_nb)
 
-RIpred<- cbind(mean_RIunv[1],mean_RIunv[2], cpue_RIunv$cpue_RIunv, RIunv_nb$RIunv_nb)
-colnames(RIpred) <- c('year','mean CPUE','RIunv','RIunv_nb')
+RIpred_unv<- cbind(mean_RIunv[1],mean_RIunv[2], cpue_RIunv$cpue_RIunv, RIunv_nb$RIunv_nb)
+colnames(RIpred_unv) <- c('year','mean CPUE','RIunv','RIunv_nb')
 
-RIpred_plot <- RIpred %>% pivot_longer(cols=2:ncol(.), names_to = "n_fish")
+RIpred_plot_unv <- RIpred_unv %>% pivot_longer(cols=2:ncol(.), names_to = "n_fish")
 
 ## initial value negative  
-plot2<- RIpred_plot %>% 
+plot2<- RIpred_plot_unv %>% 
   ggplot() +
   aes(x=year, y = value) +
   geom_line(aes(col = n_fish), linewidth=1) +
   theme(legend.position = "bottom") +
   labs(x="Year", y="Number of Fish")+
-  guides(col = guide_legend(nrow = 1))
+  guides(col = guide_legend(nrow = 1))+
+  ggtitle("Rhode Island unvented")
+
+
+# VENTED CPUE BUZZARDS BAY SUMMARY
+
+mean_BBv <- BB %>% group_by(Year) %>% 
+  summarise (cpue = mean(bsbCount_Vented, na.rm = TRUE),
+             cpuen = n())
+
+cpue_BBv <- (c(BBv$summary$coefficients[1,1],  
+                 BBv$summary$coefficients[1,1] + BBv$summary$coefficients[2:12,1]))
+cpue_BBv<-as.data.frame(cpue_BBv)
+
+BBv_nb <- exp(c(BBv_nb$summary$coefficients[1,1],  
+                  BBv_nb$summary$coefficients[1,1] + BBv_nb$summary$coefficients[2:12,1]))
+BBv_nb<-as.data.frame(BBv_nb)
+
+BBpred_ven<- cbind(mean_BBv[1],mean_BBv[2], cpue_BBv$cpue_BBv, BBv_nb$BBv_nb)
+colnames(BBpred_ven) <- c('year','mean CPUE','BBv','BBv_nb')
+
+BBpred_plot_ven <- BBpred_ven %>%
+  pivot_longer(cols=2:ncol(.), names_to = "n_fish") %>%
+  # Add in missing 2013 data (will be NAs)
+  complete(year = min(BBpred_ven$year):max(BBpred_ven$year),
+           n_fish)
+
+# Specify x axis breaks
+xbrk <- seq(from = min(BBpred_plot_ven$year), to = max(BBpred_plot_ven$year), by =2)
+
+# Create the plot
+plot3<- BBpred_plot_ven %>% 
+  ggplot() +
+  aes(x=year, y = value) +
+  geom_line(aes(col = n_fish), linewidth=1) +
+  theme(legend.position = "bottom") +
+  scale_x_continuous(breaks = xbrk) +
+  labs(x="Year", y="Number of Fish")+
+  guides(col = guide_legend(nrow = 1))+
+  ggtitle("Buzzards Bay vented")
+
+
+# VENTED CPUE RHODE ISLAND
+
+mean_RIv <- RI %>% group_by(Year) %>% 
+  summarise (cpue = mean(bsbCount_Vented, na.rm = TRUE),
+             cpuen = n())
+
+cpue_RIv <- (c(RIv$summary$coefficients[1,1],  
+                 RIv$summary$coefficients[1,1] + RIv$summary$coefficients[2:15,1]))
+cpue_RIv<-as.data.frame(cpue_RIv)
+
+RIv_nb <- exp(c(RIv_nb$summary$coefficients[1,1],  
+               RIv_nb$summary$coefficients[1,1] + RIv_nb$summary$coefficients[2:15,1]))
+RIv_nb<-as.data.frame(RIv_nb)
+
+RIpred_ven<- cbind(mean_RIv[1],mean_RIv[2], cpue_RIv$cpue_RIv, RIv_nb$RIv_nb)
+colnames(RIpred_ven) <- c('year','mean CPUE','RIv','RIv_nb')
+
+RIpred_plot_ven <- RIpred_ven %>% pivot_longer(cols=2:ncol(.), names_to = "n_fish")
+
+## initial value negative  
+plot4<- RIpred_plot_ven %>% 
+  ggplot() +
+  aes(x=year, y = value) +
+  geom_line(aes(col = n_fish), linewidth=1) +
+  theme(legend.position = "bottom") +
+  labs(x="Year", y="Number of Fish")+
+  guides(col = guide_legend(nrow = 1))+
+  ggtitle("Rhode Island vented")
+
 
 
 #### Zero inflated and Hurdle models 
