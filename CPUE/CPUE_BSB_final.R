@@ -547,7 +547,8 @@ predsRI_ST %>%
               fill = 'cornflowerblue', alpha = 0.5) +
   geom_line() +
   geom_point()+
-  ggtitle("Rhode Island unvented zero inflated (negbin)")
+  ggtitle("Rhode Island unvented zero inflated (negbin)") +
+  scale_x_continuous(breaks = seq(2006, 2020, 2))
 
 
 
