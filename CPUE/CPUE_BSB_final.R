@@ -46,6 +46,7 @@ library(hurdlr)
 library(pscl)
 library(lmtest)
 library(ggplot2)
+library(tidyverse)
 
 RI <- data %>% tibble::as_tibble() %>% 
         filter(Bay=="Rhode Island") 
@@ -184,6 +185,7 @@ N  = nrow(BB)
 p  = length(coef(BBv_nb))   
 OM3.3<-sum(E2^2) / (N - p)
 
+AIC(BBunv_nb,BBv_nb)
 
 ##########################
 ###### RHODE ISLAND ######
@@ -217,6 +219,8 @@ anova(RIv)
 PseudoR(RIv)
 AIC(RIv)
 
+AIC(RIv, RIunv)
+
 #check overdispersion 
 E2 = resid(RIv, type = "pearson")
 N  = nrow(RI)
@@ -238,8 +242,6 @@ E2 = resid(RIunv_nb, type = "pearson")
 N  = nrow(RI)
 p  = length(coef(RIunv_nb))   
 OM9<-sum(E2^2) / (N - p)
-
-AIC(RIv, RIunv)
 
 
 # Fourth model negative binomial GLM including year month and strata 
