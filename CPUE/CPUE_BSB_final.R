@@ -296,7 +296,7 @@ colnames(BBpred_unv) <- c('year','mean CPUE','BBunv','BBunv_nb')
 BBpred_plot_unv <- BBpred_unv %>%
   pivot_longer(cols=2:ncol(.), names_to = "n_fish") %>%
   # Add in missing 2013 data (will be NAs)
-  complete(year = min(BBpred$year):max(BBpred$year),
+  complete(year = min(BBpred_unv$year):max(BBpred_unv$year),
            n_fish)
 
 # Specify x axis breaks
@@ -467,8 +467,10 @@ sum(sapply(predsBBBoot, is.null))
 # Get mean and SE
 predsBB_ST <- predsBBBoot %>%
   bind_rows() %>%
-  #rename_with(~BB_zi_pred$Year) %>%
+  rename_with(~(BB_zi_pred$Year %>% as.character())) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  mutate(Year = Year %>% as.numeric()) %>%
+  complete(Year = 2008:2020) %>%
   group_by(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
@@ -482,7 +484,8 @@ predsBB_ST %>%
               fill = 'cornflowerblue', alpha = 0.5) +
   geom_line() +
   geom_point()+
-  ggtitle("Buzzards Bay unvented zero inflated (negbin)")
+  ggtitle("Buzzards Bay unvented zero inflated (negbin)") +
+  scale_x_continuous(breaks = seq(2008, 2020, 2))
 
 
 # Second model ZI including year month and strata, negative binomial 
@@ -527,8 +530,10 @@ sum(sapply(predsRIBoot, is.null))
 # Get mean and SE
 predsRI_ST <- predsRIBoot %>%
   bind_rows() %>%
-  #rename_with(~BB_zi_pred$Year) %>%
+  rename_with(~(RI_zi_pred$Year %>% as.character)) %>%
   pivot_longer(everything(), names_to = 'Year', values_to = 'NHat') %>%
+  mutate(Year = Year %>% as.numeric()) %>%
+  complete(Year = 2008:2020) %>%
   group_by(Year) %>%
   summarize(Mean = mean(NHat),
             SE = sd(NHat))
