@@ -487,6 +487,24 @@ predsBB_ST %>%
   ggtitle("Buzzards Bay unvented zero inflated (negbin)") +
   scale_x_continuous(breaks = seq(2008, 2020, 2))
 
+thm <- theme_bw() +
+  theme(text = element_text(size = 18),
+        plot.title = element_text(size = 16),
+        axis.text = element_text(size = 14)) 
+
+bbUnv_presOut <- predsBB_ST %>%
+  ggplot(aes(x = Year, y = Mean, group = 1)) +
+  geom_ribbon(aes(ymin = loCI, ymax = upCI),
+              fill = 'cornflowerblue', alpha = 0.25) +
+  geom_line() +
+  geom_point()+
+  ggtitle("Buzzards Bay") +
+  ylab("Index") +
+  scale_x_continuous(breaks = seq(2008, 2020, 2)) +
+  thm
+
+ggsave(filename = 'bbIDX.png', plot = bbUnv_presOut,
+       width = 8, height = 5)
 
 # Second model ZI including year month and strata, negative binomial 
 # Unvented Rhode Island 
@@ -549,6 +567,20 @@ predsRI_ST %>%
   geom_point()+
   ggtitle("Rhode Island unvented zero inflated (negbin)") +
   scale_x_continuous(breaks = seq(2006, 2020, 2))
+
+riUnv_presOut <- predsRI_ST %>%
+  ggplot(aes(x = Year, y = Mean, group = 1)) +
+  geom_ribbon(aes(ymin = loCI, ymax = upCI),
+              fill = 'cornflowerblue', alpha = 0.25) +
+  geom_line() +
+  geom_point()+
+  ggtitle("Rhode Island") +
+  ylab("Index") +
+  scale_x_continuous(breaks = seq(2008, 2020, 2)) +
+  thm
+
+ggsave(filename = 'riIDX.png', plot = riUnv_presOut,
+       width = 8, height = 5)
 
 
 # Third model hurdle including year month and strata Unvented Buzzards Bay 
@@ -660,13 +692,14 @@ AIC(RIunv_hurdle,RIunv_geom, RIunv_negbin, RIunv_nbnb)
 c(OM15, OM16, OM17, OM18)
 
 
-
-par(mfrow=c(1,2))
-plot(density(BB$bsbCount_Unvented))
-lines(density(predict(BBunv_nb, type='response')), col='red')
-
-plot(density(RI$bsbCount_Unvented))
-lines(density(predict(RIunv_nb, type='response')), col='red')
+# Causing error at the moment just b/c BBunv_nb (and probably RIunv_nb)
+# have been reassigned from models to data frames.
+# par(mfrow=c(1,2))
+# plot(density(BB$bsbCount_Unvented))
+# lines(density(predict(BBunv_nb, type='response')), col='red')
+# 
+# plot(density(RI$bsbCount_Unvented))
+# lines(density(predict(RIunv_nb, type='response')), col='red')
 
 
 # for extract coefficients we want the fish count or probability of find a fish poisson or negative binomial
